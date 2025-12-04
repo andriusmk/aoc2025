@@ -28,14 +28,14 @@
         neighbours (fn [pos] (set (map #(mapv + pos %) neighb-off)))
         neighb-cnt (fn [occupied pos] (count (set/intersection (neighbours pos) occupied)))
         valid? (fn [occupied pos] (< (neighb-cnt occupied pos) 4))
-        find-valid (fn [occupied] (set (filter (partial valid? occupied) occupied)))
-        rec-f (fn [occupied ans]
-                (let [removable (find-valid occupied)]
-                  (if (empty? removable) ans
-                      (recur (set/difference occupied (set removable)) (+ ans (count removable))))))]
-    (rec-f (get-occupied input) 0)
-    ;
-    ))
+        find-valid (fn [occupied] (set (filter (partial valid? occupied) occupied)))]
+    (loop [occupied (get-occupied input)
+           ans 0]
+      (let [removable (find-valid occupied)
+            rcnt (count removable)]
+        ; (println rcnt)
+        (if (zero? rcnt) ans
+            (recur (set/difference occupied (set removable)) (+ ans rcnt)))))))
 
 (comment
   (solution (parse-test test-input)) ; must be 43
