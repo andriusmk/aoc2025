@@ -29,10 +29,10 @@
         neighb-cnt (fn [occupied pos] (count (set/intersection (neighbours pos) occupied)))
         valid? (fn [occupied pos] (< (neighb-cnt occupied pos) 4))
         find-valid (fn [occupied] (set (filter (partial valid? occupied) occupied)))
-        rec-f (fn rec-f [occupied ans]
+        rec-f (fn [occupied ans]
                 (let [removable (find-valid occupied)]
                   (if (empty? removable) ans
-                      (rec-f (set/difference occupied (set removable)) (+ ans (count removable))))))]
+                      (recur (set/difference occupied (set removable)) (+ ans (count removable))))))]
     (rec-f (get-occupied input) 0)
     ;
     ))
