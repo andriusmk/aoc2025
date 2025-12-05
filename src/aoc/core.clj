@@ -1,5 +1,4 @@
-(ns aoc.core (:require [clojure.string :as string]
-                       [clojure.java.io :refer [reader]]))
+(ns aoc.core (:require [clojure.string :as string]))
 
 (defn parse-test [input]
   (string/split-lines (string/trim input)))
@@ -10,8 +9,14 @@
   (println value)
   value)
 
+(defn chop [n s]
+  (loop [parts () s' s]
+    (if (empty? s') (->> parts
+                         reverse
+                         (map (partial apply str)))
+        (let [[fst snd] (split-at n s')]
+          (recur (conj parts fst) snd)))))
+
 (comment
-  (defn read-input [name]
-    (remove empty? (with-open [rdr (reader name)]
-                     (doall (line-seq rdr)))))
+  ;
   )
