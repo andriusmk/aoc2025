@@ -8,7 +8,7 @@
    :data (vec (apply str input))})
 
 (defn pos-id [{width :width} x y]
-  (+ (* y width) x))
+  (if (<= 0 x (dec width)) (+ (* y width) x) nil))
 
 (defn pos-xy [{width :width} id]
   [(mod id width) (quot id width)])
@@ -18,7 +18,7 @@
    (cond
      (vector? pos) (clojure.core/get data (apply (partial pos-id m) pos) c)
      (number? pos) (clojure.core/get data pos c)
-     :else nil))
+     :else c))
   ([m pos] (get m pos nil)))
 
 (defn check [m pos c]
