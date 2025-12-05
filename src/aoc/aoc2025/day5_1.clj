@@ -37,6 +37,7 @@
 
 (comment
   (solution (aoc/parse-test test-input)) ; must be 3
-  (solution (aoc/read-input input-file))
   ;;
   )
+
+(solution (aoc/read-input input-file))

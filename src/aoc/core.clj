@@ -6,6 +6,10 @@
 
 (defn read-input [name] (parse-test (slurp name)))
 
+(defn dbg [value]
+  (println value)
+  value)
+
 (comment
   (defn read-input [name]
     (remove empty? (with-open [rdr (reader name)]

@@ -21,19 +21,11 @@
 (defn parse-range [line] 
   (mapv parse-long (string/split line #"-")))
 
-(defn dbg [value]
-  (println value)
-  value)
-
 (defn get-ranges [input]
   (->> input
        (take-while (comp not empty?))
        (map parse-range)
        (sort (fn [[l1 _] [l2 _]] (< l1 l2)))
-      ;;  (sort (fn [[l1 h1] [l2 h2]]
-      ;;          (or (< l1 l2)
-      ;;              (and (= l1 l2)
-      ;;                   (< h1 h2)))))
        ))
 
 (defn range-size [lo hi]
@@ -52,6 +44,7 @@
 
 (comment
   (solution (aoc/parse-test test-input)) ; must be 14
-  (solution (aoc/read-input input-file))
   ;;
   )
+
+(solution (aoc/read-input input-file))
