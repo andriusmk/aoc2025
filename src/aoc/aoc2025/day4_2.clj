@@ -30,12 +30,14 @@
                          :when (not (= x y 0))]
                      (map2d/pos-id initial-map x y))
         valid-pos (fn [m pos]
-                    (let [neighbours (map (comp (partial map2d/get m) (partial + pos)) neighb-off)]
+                    (let [neighbours (map (comp #(map2d/get m % \.) (partial + pos)) neighb-off)]
                       (< (count (filter (partial = \@) neighbours)) 4)))]
     (loop [ans 0 curr-map initial-map]
-      (let [valid-poss (filter (fn [[idx c]] (and (= c \@) (valid-pos curr-map idx))) (map2d/enumerate curr-map))]
+      (let [valid-poss (filter (fn [[idx c]] (and (= c \@) (valid-pos curr-map idx))) (map2d/enumerate curr-map))
+            new-map (apply (partial map2d/set-to curr-map \.) (map first valid-poss))]
+        (when (zero? ans) (aoc/dbg (map2d/show new-map)))
         (if (empty? valid-poss) ans
-            (recur (+ ans (count valid-poss)) (apply (partial map2d/set-to curr-map \.) (map first valid-poss))))))))
+            (recur (+ ans (count valid-poss)) new-map))))))
 
 (comment
   (solution (aoc/parse-test test-input)) ; must be 43

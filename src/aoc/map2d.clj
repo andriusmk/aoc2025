@@ -38,6 +38,7 @@
 
 (comment
   (let [m (create-map ["@.@" ".@." "@@@"])]
-    (println (show (set-to m \. (pos-id m 0 2)))))
+    (println (show (set-to m \. (pos-id m 0 2))))
+    (println (get m 9 \.)))
   ;;
   )
