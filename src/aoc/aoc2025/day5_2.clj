@@ -29,10 +29,12 @@
   (->> input
        (take-while (comp not empty?))
        (map parse-range)
-       (sort (fn [[l1 h1] [l2 h2]]
-               (or (< l1 l2)
-                   (and (= l1 l2)
-                        (< h1 h2)))))))
+       (sort (fn [[l1 _] [l2 _]] (< l1 l2)))
+      ;;  (sort (fn [[l1 h1] [l2 h2]]
+      ;;          (or (< l1 l2)
+      ;;              (and (= l1 l2)
+      ;;                   (< h1 h2)))))
+       ))
 
 (defn range-size [lo hi]
   (- (inc hi) lo))
@@ -46,7 +48,6 @@
 (defn solution [input]
   (let [[r1 & ranges] (get-ranges input)
         [ans [lo hi]] (reduce merge-ranges [0 r1] ranges)]
-    (dbg [r1 ranges])
     (+ ans (range-size lo hi))))
 
 (comment
