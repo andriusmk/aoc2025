@@ -33,16 +33,10 @@
                            :when (let [[lo hi] (parse-range srng)]
                                    (<= lo id hi))]
                        id)))
-    ;; (count (distinct (reduce (fn [good srng]
-    ;;                            (let [[lo hi] (parse-range srng)]
-    ;;                              (conj good (filter #(<= lo % hi) ids))))
-    ;;                          ()
-    ;;                          ranges)))
     ))
 
 (comment
-  (split-with (comp not empty?) (string/split-lines "a\nb\n\nc\nd"))
-  (solution (aoc/parse-test test-input)) ; must be 43
+  (solution (aoc/parse-test test-input)) ; must be 3
   (solution (aoc/read-input input-file))
   ;;
   )
