@@ -25,8 +25,7 @@
   (->> input
        (take-while (comp not empty?))
        (map parse-range)
-       (sort (fn [[l1 _] [l2 _]] (< l1 l2)))
-       ))
+       (sort (fn [[l1 _] [l2 _]] (< l1 l2)))))
 
 (defn range-size [lo hi]
   (- (inc hi) lo))
