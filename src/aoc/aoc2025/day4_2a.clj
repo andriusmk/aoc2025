@@ -20,14 +20,14 @@
 
 (defn solution [input]
   (let [initial-map (map2d/create-map input)
-        neighb-off (for [x (range -1 2)
-                         y (range -1 2)
-                         :when (not (= x y 0))]
-                     [x y])
+        find-neighbours (fn [m pos]
+                          (let [[px py] (map2d/pos-xy m pos)]
+                            (for [dx (range -1 2)
+                                  dy (range -1 2)
+                                  :when (not (= dx dy 0))]
+                              (map2d/get m [(+ px dx) (+ py dy)] \.))))
         valid-pos (fn [m pos]
-                    (let [neighbours (map (comp #(map2d/get m % \.)
-                                                (partial mapv + (map2d/pos-xy m pos)))
-                                          neighb-off)]
+                    (let [neighbours (find-neighbours m pos)]
                       (< (count (filter (partial = \@)
                                         neighbours))
                          4)))]
@@ -42,7 +42,6 @@
 
 (comment
   (solution (aoc/parse-test test-input)) ; must be 43
-  (solution (aoc/read-input input-file))
-  (map (partial apply str) (split-at 2 "abcd"))
+  (time (solution (aoc/read-input input-file)))
   ;;
   )

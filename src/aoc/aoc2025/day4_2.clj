@@ -39,6 +39,6 @@
 
 (comment
   (solution (parse-test test-input)) ; must be 43
-  (solution (read-input input-file))
+  (time (solution (read-input input-file)))
   ;;
   )
