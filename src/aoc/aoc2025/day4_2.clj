@@ -1,6 +1,7 @@
 (ns aoc.aoc2025.day4-2
   (:require [aoc.core :as aoc]
-            [aoc.map2d :as map2d]))
+            [aoc.map2d :as map2d]
+            [clojure.string :as string]))
 
 (def test-input "
 ..@@.@@@@.
@@ -35,7 +36,11 @@
     (loop [ans 0 curr-map initial-map]
       (let [valid-poss (filter (fn [[idx c]] (and (= c \@) (valid-pos curr-map idx))) (map2d/enumerate curr-map))
             new-map (apply (partial map2d/set-to curr-map \.) (map first valid-poss))]
-        (when (zero? ans) (aoc/dbg (map2d/show new-map)))
+        (when (zero? ans)
+          (spit "data/tmp/bad-dbg.txt" (string/join \newline (map (fn [[pos _]]
+                                                                    (let [[x y] (map2d/pos-xy new-map pos)]
+                                                                      (str "line: " y " col: " x)))
+                                                                  valid-poss))))
         (if (empty? valid-poss) ans
             (recur (+ ans (count valid-poss)) new-map))))))
 
