@@ -31,11 +31,10 @@
 (defn range-size [lo hi]
   (- (inc hi) lo))
 
-(defn merge-ranges [[ans [l1 h1]] r2]
-  (let [[l2 h2] r2]
-    (if (>= h1 l2) ; if overlap
-      [ans [l1 (max h1 h2)]]
-      [(+ ans (range-size l1 h1)) r2])))
+(defn merge-ranges [[ans [l1 h1]] [l2 h2 :as r2]] 
+  (if (>= h1 l2) ; if overlap
+    [ans [l1 (max h1 h2)]]
+    [(+ ans (range-size l1 h1)) r2]))
 
 (defn solution [input]
   (let [[r1 & ranges] (get-ranges input)
