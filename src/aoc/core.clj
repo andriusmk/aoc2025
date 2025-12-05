@@ -2,7 +2,7 @@
                        [clojure.java.io :refer [reader]]))
 
 (defn parse-test [input]
-  (vec (remove empty? (string/split-lines input))))
+  (string/split-lines (string/trim input)))
 
 (defn read-input [name] (parse-test (slurp name)))
 
