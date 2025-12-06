@@ -28,7 +28,8 @@
                        str) <>)
       (aoc/split-all identity <>)
       (map (comp conj) <> ops)
-      (eval (conj <> '+)))))
+      (conj <> '+)
+      (eval <>))))
 
 (comment
   (solution (aoc/parse-test test-input))
