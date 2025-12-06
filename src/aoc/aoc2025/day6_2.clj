@@ -14,7 +14,9 @@
 (defn parse-item [item]
   (cond
     (re-matches #"\d+" item) (parse-long item)
-    (re-matches #"[+*]" item) (symbol item)))
+    (re-matches #"[+*]" item) (case item
+                                "+" +
+                                "*" *)))
 
 (defn solution [input]
   (let [ops (as-> (last input) <>
@@ -27,9 +29,8 @@
                        string/trim
                        str) <>)
       (aoc/split-all identity <>)
-      (map conj <> ops)
-      (conj <> '+)
-      (eval <>))))
+      (map (fn [values op] (apply #(apply %1 %&) (conj values op))) <> ops)
+      (apply + <>))))
 
 (comment
   (solution (aoc/parse-test test-input))
