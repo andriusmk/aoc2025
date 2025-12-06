@@ -27,11 +27,11 @@
                        string/trim
                        str) <>)
       (aoc/split-all identity <>)
-      (map (comp eval conj) <> ops)
-      (apply + <>))))
+      (map (comp conj) <> ops)
+      (eval (conj <> '+)))))
 
 (comment
   (solution (aoc/parse-test test-input))
-  (solution (aoc/read-input input-file))
+  (time (solution (aoc/read-input input-file)))
   ;;
   )
