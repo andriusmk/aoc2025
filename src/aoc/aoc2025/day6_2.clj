@@ -27,7 +27,7 @@
                        string/trim
                        str) <>)
       (aoc/split-all identity <>)
-      (map (comp conj) <> ops)
+      (map conj <> ops)
       (conj <> '+)
       (eval <>))))
 
