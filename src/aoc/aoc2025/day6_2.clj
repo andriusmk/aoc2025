@@ -2,7 +2,7 @@
   (:require [aoc.core :as aoc]
             [clojure.string :as string]))
 
-(def test-input "
+(def test-input "Example from AOC" "
 123 328  51 64 
  45 64  387 23 
   6 98  215 314

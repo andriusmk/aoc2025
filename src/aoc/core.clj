@@ -1,16 +1,33 @@
 (ns aoc.core (:require [clojure.string :as string]))
 
-(defn parse-test [input]
-  (vec (drop-while empty? (string/split-lines (string/trimr input)))))
+(defn parse-test
+  "Splits input into lines of text preserving all whitespace
+   and removing leading and trailing empty lines."
+  [input]
+  (->> input
+       string/split-lines
+       (drop-while empty?)
+       (take-while (comp not empty?))
+       vec))
 
-(defn read-input [name] (parse-test (slurp name)))
+(defn read-input
+  "Reads the input file, splits the text into lines,
+   removes leading and trailing empty lines."
+  [name]
+  (parse-test (slurp name)))
 
-(defn dbg [value]
+(defn dbg
+  "Prints the parameter and evaluates to it."
+  [value]
   (println value)
   value)
 
-(defn split-all [what args]
-  (loop [args' args
+(defn split-all
+  "Splits the given collection on all occurrences of an item
+   for which the predicate `what` returns `false`. Those
+   items are not included in the output sequence."
+  [what coll] 
+  (loop [args' coll
          res ()]
     (if (empty? args') res
         (let [[grp [_ & remaining]] (split-with what args')]
