@@ -17,10 +17,15 @@
     (re-matches #"[+*]" item) (symbol item)))
 
 (defn solution [input]
-  (let [ops (map parse-item (string/split (string/trim (last input)) #"\s+"))
+  (let [ops (as-> (last input) <>
+              (string/trim <>)
+              (string/split <> #"\s+")
+              (map parse-item <>))
         args (take (dec (count input)) input)]
     (as-> args <>
-      (apply map (comp parse-item string/trim str) <>)
+      (apply map (comp parse-item
+                       string/trim
+                       str) <>)
       (aoc/split-all identity <>)
       (map (comp eval conj) <> ops)
       (apply + <>))))
