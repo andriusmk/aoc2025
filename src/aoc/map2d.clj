@@ -1,11 +1,10 @@
-(ns aoc.map2d 
+(ns aoc.map2d
   (:refer-clojure :exclude [get])
-  (:require [clojure.string :as string]
-            [aoc.core :as aoc]))
+  (:require [clojure.string :as string]))
 
 (defn create-map [input]
-  {:width (count (input 0)) 
-   :data (vec (apply str input))})
+  {:width (count (input 0))
+   :data input})
 
 (defn pos-id [{width :width} x y]
   (if (<= 0 x (dec width)) (+ (* y width) x) nil))
@@ -13,32 +12,15 @@
 (defn pos-xy [{width :width} id]
   [(mod id width) (quot id width)])
 
-(defn get
-  ([{:keys [data] :as m} pos c]
-   (cond
-     (vector? pos) (clojure.core/get data (apply (partial pos-id m) pos) c)
-     (number? pos) (clojure.core/get data pos c)
-     :else c))
-  ([m pos] (get m pos nil)))
-
-(defn check [m pos c]
-  (= (get m pos) c))
-
 (defn enumerate [m]
-  (map vector (range) (m :data)))
+  (map vector (range) (string/join (m :data))))
 
-(defn set-to [m c & positions]
-  (reduce (fn [m' pos]
-            (if (<= 0 pos (dec (count (:data m'))))
-              (update m' :data #(assoc % pos c))
-              m')) m positions))
+(defn dump [m]
+  (string/join (m :data)))
 
 (defn show [m]
-  (string/join \newline (aoc/chop (:width m) (:data m))))
+  (string/join \newline (m :data)))
 
 (comment
-  (let [m (create-map ["@.@" ".@." "@@@"])]
-    (println (show (set-to m \. (pos-id m 0 2))))
-    (println (get m 9 \.)))
   ;;
   )
