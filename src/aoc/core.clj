@@ -9,6 +9,13 @@
   (println value)
   value)
 
+(defn split-all [what args]
+  (loop [args' args
+         res ()]
+    (if (empty? args') res
+        (let [[grp [_ & remaining]] (split-with what args')]
+          (recur remaining (conj res grp))))))
+
 (comment
   ;
   )
