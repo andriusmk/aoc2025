@@ -17,7 +17,7 @@
     (re-matches #"[+*]" item) (symbol item)))
 
 (defn solution [input]
-  (let [ops (reverse (map parse-item (string/split (string/trim (last input)) #"\s+")))
+  (let [ops (map parse-item (string/split (string/trim (last input)) #"\s+"))
         args (take (dec (count input)) input)]
     (as-> args <>
       (apply map (comp parse-item string/trim str) <>)

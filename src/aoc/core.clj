@@ -27,11 +27,11 @@
    for which the predicate `what` returns `false`. Those
    items are not included in the output sequence."
   [what coll] 
-  (loop [args' coll
-         res ()]
-    (if (empty? args') res
-        (let [[grp [_ & remaining]] (split-with what args')]
-          (recur remaining (conj res grp))))))
+  (reverse (loop [args' coll
+                  res ()]
+             (if (empty? args') res
+                 (let [[grp [_ & remaining]] (split-with what args')]
+                   (recur remaining (conj res grp)))))))
 
 (comment
   ;
