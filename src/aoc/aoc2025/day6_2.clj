@@ -12,11 +12,12 @@
 (def input-file "data/input-6.txt")
 
 (defn parse-item [item]
-  (cond
-    (re-matches #"\d+" item) (parse-long item)
-    (re-matches #"[+*]" item) (case item
-                                "+" +
-                                "*" *)))
+  (let [[_ n op] (re-find #"(\d+)|([+*])" item)]
+    (cond
+      n  (parse-long n)
+      op (case op
+           "+" +
+           "*" *))))
 
 (defn solution [input]
   (let [ops (as-> (last input) <>
@@ -24,13 +25,11 @@
               (string/split <> #"\s+")
               (map parse-item <>))
         args (take (dec (count input)) input)]
-    (as-> args <>
-      (apply map (comp parse-item
-                       string/trim
-                       str) <>)
-      (aoc/split-all identity <>)
-      (map (fn [values op] (apply #(apply %1 %&) (conj values op))) <> ops)
-      (apply + <>))))
+    (->> args
+         (apply map (comp parse-item str))
+         (aoc/split-all identity)
+         (map apply ops)
+         (apply +))))
 
 (comment
   (solution (aoc/parse-test test-input))
