@@ -48,7 +48,7 @@
                       [x (apply + (map second xtls))])]
     (loop [status initial-status]
       (if (not (map2d2/in-bounds? box [0 (status :y)]))
-        (apply + (map second (status :beams)))
+        (apply + (vals (status :beams)))
         (recur (-> status
                    (update :y inc)
                    (update :beams (fn [beams]
