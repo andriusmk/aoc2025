@@ -15,9 +15,7 @@
   (let [[_ n op] (re-find #"(\d+)|([+*])" item)]
     (cond
       n  (parse-long n)
-      op (case op
-           "+" +
-           "*" *))))
+      op (case op "+" +, "*" *))))
 
 (defn solution [input]
   (let [ops (as-> (last input) <>
