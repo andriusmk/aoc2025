@@ -49,11 +49,10 @@
     (loop [status initial-status]
       (if (not (map2d2/in-bounds? box [0 (status :y)]))
         (apply + (vals (status :beams)))
-        (recur (-> status
-                   (update :y inc)
-                   (update :beams (fn [beams]
-                                    (let [new-beams (mapcat #(maybe-split % (status :y) (get beams % 1)) (keys beams))]
-                                      (into {} (map merge-beams (group-by first new-beams))))))))))))
+        (recur {:y (inc (status :y))
+                :beams (let [beams (status :beams)
+                             new-beams (mapcat #(maybe-split % (status :y) (get beams % 1)) (keys beams))]
+                         (into {} (map merge-beams (group-by first new-beams))))})))))
 
 (comment
   (solution (aoc/parse-test test-input))
