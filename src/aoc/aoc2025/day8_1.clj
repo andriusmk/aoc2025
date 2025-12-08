@@ -1,5 +1,6 @@
 (ns aoc.aoc2025.day8-1
   (:require [aoc.core :as aoc]
+            [clojure.set :as set]
             [clojure.string :as string]))
 
 (def test-input "Example from AOC" "
@@ -41,12 +42,23 @@
 (defn calc-distances [vectors]
   (map #(vector % (apply distance-sqr (map vectors %))) (make-pairs (count vectors))))
 
+(defn connected? [network n1 n2]
+  (loop [nodes #{n1}
+         seen #{}]
+    (case
+     (empty? nodes) false
+     (nodes n2) true
+     :else (recur (mapcat network (set/difference nodes seen)) (concat nodes seen)))))
+
 (defn add-connection [network n1 n2]
-  (let [cs1 (get network n1 #{}) 
+  (let [cs1 (get network n1 #{})
         connect (fn [cs nn1 nn2]
                   (assoc network nn1 (conj cs nn2)))]
-
-    (aoc/dbg (connect cs1 n1 n2))))
+    ;; This function must make the connection both ways
+    (aoc/dbg
+     (if (not (connected? network n1 n2))
+       (connect cs1 n1 n2)
+       network))))
 
 (defn update-net [state [box1 box2]]
   (-> state
