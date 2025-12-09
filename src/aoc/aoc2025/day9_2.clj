@@ -47,15 +47,27 @@
 (defn calc-areas [vectors]
   (map #(vector % (apply area (map vectors %))) (make-pairs (count vectors))))
 
+(defn stats [vectors]
+  (->> vectors
+       (reduce (fn [m [x y]]
+                 ; (aoc/dbg [x m])
+                 (update m x #(conj % y)))
+               {})
+       vals
+       (map (partial apply (comp abs -)))
+       (apply min)
+       ))
+
 (defn solution [input]
   (let [vectors (parse-input input)]
     (->> vectors
-         calc-areas
-         (apply max-key second)
-         second)))
+         stats
+         )))
 
 (comment
+  (stats [[1 1] [1 2] [1 3]])
   (solution (aoc/parse-test test-input))
   (time (solution (aoc/read-input input-file)))
+  (update {} 1 identity)
   ;;
   )
