@@ -1,4 +1,4 @@
-(ns aoc.aoc2025.day9-1
+(ns aoc.aoc2025.day9-2
   (:require [aoc.core :as aoc]
             [clojure.string :as string]))
 
