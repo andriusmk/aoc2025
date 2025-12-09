@@ -21,6 +21,24 @@
 (defn area [v1 v2]
   (apply * (map (comp inc abs -) v1 v2)))
 
+(defn flip-v [[x1 y1] [x2 y2]]
+  [[x1 y2] [x2 y1]])
+
+(defn flip-h [[x1 y1] [x2 y2]]
+  [[x2 y1] [x1 y2]])
+
+(defn pos-rec [vectors t1 t2]
+  (let [[[x1 y1 :as v1] [x2 y2 :as v2]] (mapv vectors [t1 t2])]
+    (cond->> [v1 v2]
+      (< x1 x2) (apply flip-v)
+      (< y1 y2) (apply flip-h))))
+
+(defn inside? [vectors [t1 t2] t]
+  (let [[[x1 x2] [y1 y2]] (pos-rec vectors t1 t2)
+        [x y] t]
+    (and (> x1 x x2)
+         (> y1 y y2))))
+
 (defn make-pairs [size]
   (for [x (range 0 (dec size))
         y (range (inc x) size)]
