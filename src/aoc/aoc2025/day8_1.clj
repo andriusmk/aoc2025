@@ -44,42 +44,61 @@
 
 (defn connected? [network n1 n2]
   (loop [nodes #{n1}
+         prev #{}]
+    (cond
+      (empty? nodes)  false
+      (nodes n2) true
+      :else (recur (set/difference (apply set/union (map network nodes)) prev) nodes))))
+
+(defn walk [network node]
+  (loop [nodes #{node}
          seen #{}]
-    (case
-     (empty? nodes) false
-     (nodes n2) true
-     :else (recur (mapcat network (set/difference nodes seen)) (concat nodes seen)))))
+    (if (empty? nodes)
+      seen
+      (recur (set/difference (set (mapcat network nodes)) seen) (set/union seen nodes)))))
+
+(defn circuits [network]
+  (loop [cs ()
+         known #{}
+         [[node _] & remaining :as nodes] network]
+    (cond
+      (empty? nodes) cs
+      (known node) (recur cs known remaining)
+      :else (let [new-circuit (walk network node)]
+              (recur (conj cs new-circuit)
+                     (set/union known new-circuit)
+                     remaining)))))
 
 (defn add-connection [network n1 n2]
-  (let [cs1 (get network n1 #{})
-        connect (fn [cs nn1 nn2]
-                  (assoc network nn1 (conj cs nn2)))]
-    ;; This function must make the connection both ways
-    (aoc/dbg
-     (if (not (connected? network n1 n2))
-       (connect cs1 n1 n2)
-       network))))
+  (let [connect (fn [net n1' n2']
+                  (update net n1' #(conj (or %1 #{}) n2')))]
+    (if (connected? network n1 n2)
+      network
+      (connect network n1 n2))))
 
 (defn update-net [state [box1 box2]]
   (-> state
       (update :network add-connection box1 box2)
-      (update :network add-connection box2 box1)
-      ))
+      (update :network add-connection box2 box1)))
 
 (defn solution [input]
   (->> input
        parse-input
        calc-distances
-       (sort (fn [v1 v2] (< (second v1) (second v2)))) 
-       (take 10)
+       (sort (fn [v1 v2] (< (second v1) (second v2))))
+       (take 1000)
        (map first)
        (reduce update-net {:network {}})
+       :network
+       circuits
+       (map count)
+       (sort >) 
+       (take 3)
+       (apply *)
        ))
 
 (comment
-  (make-pairs 10)
-  (solution (aoc/parse-test test-input)) 
+  (solution (aoc/parse-test test-input))
   (time (solution (aoc/read-input input-file)))
-  (take 5 (solution (aoc/read-input input-file)))
   ;;
   )
