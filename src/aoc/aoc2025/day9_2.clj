@@ -21,75 +21,72 @@
 (defn area [v1 v2]
   (apply * (map (comp inc abs -) v1 v2)))
 
-(defn flip-v [[x1 y1] [x2 y2]]
+(defn flip-v [[[x1 y1] [x2 y2]]]
   [[x1 y2] [x2 y1]])
 
-(defn flip-h [[x1 y1] [x2 y2]]
+(defn flip-h [[[x1 y1] [x2 y2]]]
   [[x2 y1] [x1 y2]])
 
-(defn pos-rec [vectors t1 t2]
-  (let [[[x1 y1 :as v1] [x2 y2 :as v2]] (mapv vectors [t1 t2])]
+(defn pos-rec [vectors rect]
+  (let [[[x1 y1 :as v1] [x2 y2 :as v2]] (mapv vectors rect)]
     (cond->> [v1 v2]
-      (< x1 x2) (apply flip-v)
-      (< y1 y2) (apply flip-h))))
-
-(defn inside? [vectors [t1 t2] t]
-  (let [[[x1 x2] [y1 y2]] (pos-rec vectors t1 t2)
-        [x y] t]
-    (and (> x1 x x2)
-         (> y1 y y2))))
+      (> x1 x2) flip-h
+      (> y1 y2) flip-v)))
 
 (defn make-pairs [size]
   (for [x (range 0 (dec size))
         y (range (inc x) size)]
     [x y]))
 
-(defn calc-areas [vectors]
-  (map #(vector % (apply area (map vectors %))) (make-pairs (count vectors))))
-
 (defn compare-areas [vectors p1 p2]
   (let [[v1 v2] (map vectors p1)
         [v1' v2'] (map vectors p2)
         a1 (area v1 v2)
-        a2 (area v1' v2')
-        ] (> a1 a2))
-  )
+        a2 (area v1' v2')] (> a1 a2)))
 
 (defn init-env [input]
   (let [vectors (parse-input input)
         all-pairs (make-pairs (count input))
         first-dx (- ((vectors 1) 0) ((vectors 0) 0))
         vert-idx (if (zero? first-dx) 0 1)
-        hor-idx (mod (inc vert-idx) 2)
-        ]
+        hor-idx (mod (inc vert-idx) 2)]
     {:vectors vectors
      :sorted-pairs (sort (partial compare-areas vectors) all-pairs)
      :verticals (vec (sort-by (comp second vectors) < (range vert-idx (count vectors) 2)))
      :horizontals (vec (sort-by (comp first vectors) < (range hor-idx (count vectors) 2)))}))
 
-(defn valid? [env rect]
-  )
+(defn intersects-v? [vectors [[xlo ylo] [xhi yhi] :as rect] idx]
+  (let [[x y1] (vectors idx)
+        [_ y2] (vectors (mod (inc idx) (count vectors)))]
+    (and (< xlo x xhi)
+         (or (< ylo y1 yhi)
+             (< ylo y2 yhi)
+             (and (<= yhi (max y1 y2))
+                  (>= ylo (min y1 y2)))))))
 
-(defn stats [vectors]
-  (->> vectors
-       (reduce (fn [m [x y]]
-                 ; (aoc/dbg [x m])
-                 (update m x #(conj % y)))
-               {})
-       vals
-       (map (partial apply (comp abs -)))
-       (apply min)
-       ))
+(defn intersects-h? [vectors [[xlo ylo] [xhi yhi]] idx]
+  (let [[x1 y] (vectors idx)
+        [x2 _] (vectors (mod (inc idx) (count vectors)))]
+    (and (< ylo y yhi)
+         (or (< xlo x1 xhi)
+             (< xlo x2 xhi)
+             (and (<= xhi (max x1 x2))
+                  (>= xlo (min x1 x2)))))))
+
+(defn valid? [env rect]
+  (let [vectors (env :vectors)
+        raw-rect (pos-rec vectors rect)]
+    (if (or (some (partial intersects-v? vectors raw-rect) (env :verticals))
+            (some (partial intersects-h? vectors raw-rect) (env :horizontals)))
+      nil
+      rect)))
 
 (defn solution [input]
   (let [env (init-env input)]
-    env)
-  )
+    (apply area (pos-rec (env :vectors) (some (partial valid? env) (env :sorted-pairs))))))
 
 (comment
-  (stats [[1 1] [1 2] [1 3]])
   (solution (aoc/parse-test test-input))
   (time (solution (aoc/read-input input-file)))
-  (update {} 1 identity)
   ;;
   )
