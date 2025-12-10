@@ -47,6 +47,29 @@
 (defn calc-areas [vectors]
   (map #(vector % (apply area (map vectors %))) (make-pairs (count vectors))))
 
+(defn compare-areas [vectors p1 p2]
+  (let [[v1 v2] (map vectors p1)
+        [v1' v2'] (map vectors p2)
+        a1 (area v1 v2)
+        a2 (area v1' v2')
+        ] (> a1 a2))
+  )
+
+(defn init-env [input]
+  (let [vectors (parse-input input)
+        all-pairs (make-pairs (count input))
+        first-dx (- ((vectors 1) 0) ((vectors 0) 0))
+        vert-idx (if (zero? first-dx) 0 1)
+        hor-idx (mod (inc vert-idx) 2)
+        ]
+    {:vectors vectors
+     :sorted-pairs (sort (partial compare-areas vectors) all-pairs)
+     :verticals (vec (sort-by (comp second vectors) < (range vert-idx (count vectors) 2)))
+     :horizontals (vec (sort-by (comp first vectors) < (range hor-idx (count vectors) 2)))}))
+
+(defn valid? [env rect]
+  )
+
 (defn stats [vectors]
   (->> vectors
        (reduce (fn [m [x y]]
@@ -59,10 +82,9 @@
        ))
 
 (defn solution [input]
-  (let [vectors (parse-input input)]
-    (->> vectors
-         stats
-         )))
+  (let [env (init-env input)]
+    env)
+  )
 
 (comment
   (stats [[1 1] [1 2] [1 3]])
