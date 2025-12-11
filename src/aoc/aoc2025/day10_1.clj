@@ -11,35 +11,60 @@
 (def input-file "data/input-10.txt")
 
 (defn parse-lights [field]
-  (let [pattern (subs field 1 (dec (count field)))]
-    (->> pattern
-         (map (fn [idx c]
-                (if (= c \#)
-                  (bit-shift-left 1 idx)
-                  0))
-              (range))
-         (apply bit-or))))
+  (let [pattern (subs field 1 (dec (count field)))
+        light-set (->> pattern
+                     (map (fn [idx c]
+                            (if (= c \#)
+                              (bit-shift-left 1 idx)
+                              0))
+                          (range))
+                     (apply bit-or))]
+    [light-set, (count pattern)]))
 
 (defn parse-button [field]
   (as-> field <>
     (subs <> 1 (dec (count field)))
     (string/split <> #",")
     (map #(bit-shift-left 1 (parse-long %)) <>)
-    (apply (partial bit-or 0) <>)
-    ))
+    (apply (partial bit-or 0) <>)))
 
 (defn parse-line [line]
   (let [fields (string/split line #"\s+")
         light-field (fields 0)
-        buttons (drop-last (rest fields))]
-    {:lights (parse-lights light-field)
+        buttons (drop-last (rest fields))
+        [light-set, light-cnt] (parse-lights light-field)]
+    {:lights light-set
+     :light-cnt light-cnt
      :buttons (mapv parse-button buttons)}))
+
+(defn press-button [device lights n]
+  (bit-xor lights ((device :buttons) n)))
+
+(defn iterate-state [device [lights buttons]]
+  (let [all-buttons (device :buttons)
+        make-new-state (fn [n]
+                         [(press-button device lights n) (conj buttons n)])]
+    (->> all-buttons
+         count
+         (range)
+         (remove buttons)
+         (map make-new-state))))
+
+(defn calc-min-pushes [device]
+  (loop [states '([0 #{}]) n 0]
+    (cond 
+      (empty? states) nil
+      (some (comp (partial = (device :lights)) first) states) n
+      :else (recur (mapcat (partial iterate-state device) states) (inc n)))))
 
 (defn parse-input [input]
   (map parse-line input))
 
 (defn solution [input]
-  (parse-input input))
+  (->> input
+       parse-input
+       (map calc-min-pushes)
+       (apply +)))
 
 (comment
   (solution (aoc/parse-test test-input))
