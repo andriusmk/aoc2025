@@ -58,24 +58,28 @@
     (loop [combinations `([~initial-score ~initial-clicks])
            visited #{}
            found-good #{}]
-      ;(aoc/dbg "--------------")
-      ;(aoc/dbg (string/join \newline combinations))
+      ;; (aoc/dbg "Combinations:" combinations)
       (let [better? (fn [current new]
-                      (and (> (first current) (first new)) (not (visited (second new)))))
-            new-combinations (apply list (distinct (mapcat (fn [combination]
-                                                             (->> combination
-                                                                  second
-                                                                  (make-new-combinations machine)
-                                                                  distinct
-                                                                  (filter (partial better? combination))
-                                                                  ))
-                                                           combinations)))
-            good-ones (filter (comp zero? first) new-combinations) 
+                      (and (>= (first current) (first new)) (not (visited (second new)))))
+            new-combinations (distinct (mapcat (fn [combination]
+                                                 (->> combination
+                                                      second
+                                                      (make-new-combinations machine)
+                                                      distinct
+                                                      (filter (partial better? combination))
+                                                      ))
+                                               combinations))
+            good-ones (map second (filter (comp zero? first) new-combinations)) 
+            min-score (if (seq new-combinations) (first (apply min-key first new-combinations)) nil)
+            filtered (when (seq new-combinations) (filter (comp (partial <= (inc min-score)) first) new-combinations))
             ]
+        (aoc/dbg "Min score:" min-score)
+        ;; (aoc/dbg "Filtered:" filtered)
+        (aoc/dbg "Foud good:" found-good)
         (cond
-          (empty? new-combinations) (apply min (map (partial apply +) found-good))
-          (seq good-ones) (recur good-ones (set/union visited (set (map second combinations))) (set/union found-good (set (map second good-ones))))
-          :else (recur new-combinations (set/union visited (set (map second combinations))) good-ones)
+          (empty? filtered) (apply min (map (partial apply +) found-good))
+          ; (seq good-ones) (recur good-ones (set/union visited (set (map second combinations))) (set/union found-good (set (map second good-ones))))
+          :else (recur filtered (set/union visited (set (map second combinations))) (set/union found-good (set good-ones)))
           )))))
 
 (defn solution [input]
@@ -83,7 +87,7 @@
        parse-input ; list of machines
        ; first
        ; solve-machine
-       (map solve-machine)
+       (map (comp aoc/dbg solve-machine))
        ;; (map calc-min-pushes)
        (apply +)
        ))
