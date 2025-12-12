@@ -10,19 +10,8 @@
 
 (def input-file "data/input-10.txt")
 
-(defn parse-lights [field]
-  (let [pattern (subs field 1 (dec (count field)))
-        light-set (->> pattern
-                       (map (fn [idx c]
-                              (if (= c \#)
-                                (bit-shift-left 1 idx)
-                                0))
-                            (range))
-                       (apply bit-or))]
-    [light-set, (count pattern)]))
-
 (defn button-effects [size wiring]
-  (let [ initial (vec (repeat size 0))]
+  (let [initial (vec (repeat size 0))]
     (reduce #(assoc %1 %2 1) initial wiring)))
 
 (defn parse-button [field]
@@ -38,43 +27,58 @@
     {:joltages joltages
      :buttons (mapv (comp (partial button-effects (count joltages)) parse-button) buttons)}))
 
-(defn press-button [device joltages n]
-  (let [effects ((device :buttons) n)
-        target (device :joltages)]
-    (loop [state joltages [curr & remaining :as curr-effects] effects]
-      (cond
-        (empty? curr-effects) state
-        (= (state curr) (target curr)) nil
-        :else (recur (update state curr inc) remaining)))))
+(defn clicks-to-joltages [machine clicks]
+  (let [effects (fn [b-clicks b-effects] (map (partial * b-clicks) b-effects))
+        all-effects (map effects clicks (machine :buttons))]
+    (vec (apply map + all-effects))))
 
-(defn iterate-state [device joltages]
-  (let [all-buttons (device :buttons)]
-    (->> all-buttons
-         count
-         (range)
-         (map (partial press-button device joltages))
-         (remove nil?))))
-
-(defn calc-min-pushes [device]
-  (aoc/dbg device)
-  (let [target (device :joltages)]
-    (loop [states (list (vec (repeat (count target) 0))) n 0]
-      (cond
-        (empty? states) nil
-        (some (partial = target) states) n
-        :else (recur (mapcat (partial iterate-state device) states) (inc n))))))
+(defn calc-score [machine clicks]
+  (let [jolts (clicks-to-joltages machine clicks)
+        diffs (map (comp abs -) jolts (machine :joltages))
+        diff-score (* 1000000 (apply + diffs))]
+    (+ diff-score (apply + clicks))))
 
 (defn parse-input [input]
   (map parse-line input))
 
+(defn solve-machine [machine]
+  (let [button-cnt (count (machine :buttons))
+        initial-clicks (vec (repeat button-cnt 0))
+        initial-score (calc-score machine initial-clicks)]
+    (loop [clicks initial-clicks
+           score initial-score
+           forbidden #{}
+           stack ()]
+      (aoc/dbg [clicks (clicks-to-joltages machine clicks) (machine :joltages) score])
+      (let [combinations (for [modifier (range -1 2)
+                               index (range 0 button-cnt)
+                               :let [new-val (+ (clicks index) modifier)]
+                               :when (and (not (zero? modifier)) (not (neg? new-val)))]
+                           (let [new-clicks (assoc clicks index new-val)]
+                             [(calc-score machine new-clicks) new-clicks]))
+            best-combs (sort-by first < combinations)
+            best-comb (some #(when (not (forbidden (second %))) %) best-combs)]
+        (aoc/dbg (string/join \newline combinations))
+        (aoc/dbg (str "best: " best-comb))
+        (cond
+          (nil? best-comb) (do (aoc/dbg (str "forbidden: " clicks))
+                               (aoc/dbg (str "next in stack: " (first stack)))
+                               (recur (first stack) score (conj forbidden clicks) (rest stack)))
+          (< (first best-comb) score) (recur (second best-comb) (first best-comb) forbidden (conj stack clicks))
+          (>= score 1000000) (do
+                               (aoc/dbg (str "forbidden: " (second best-comb)))
+                               (recur clicks score (conj forbidden (second best-comb)) stack))
+          :else (apply + clicks))))))
+
 (defn solution [input]
-  (->> input
-       parse-input
+  (->> input ; strings
+       parse-input ; list of machines
+       (map solve-machine)
        ;;  (map calc-min-pushes)
-       ;;  (apply +)
-       ))
+       (apply +)))
 
 (comment
+  (< nil 1)
   (solution (aoc/parse-test test-input))
   (time (solution (aoc/read-input input-file)))
   ;;
