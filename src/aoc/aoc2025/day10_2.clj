@@ -44,11 +44,21 @@
 
 (defn make-new-combinations [machine clicks]
   (let [button-cnt (count (machine :buttons))]
+  ;;   (loop [depth 0 mods ()]
+  ;;     (let [new-mods ]
+  ;;       (cond
+  ;;         (= depth button-cnt) mods
+  ;;         :else (recur (inc depth) mods))))
     (for [modifier (range -1 2)
-          index (range 0 button-cnt)
-          :let [new-val (+ (clicks index) modifier)]
-          :when (and (not (zero? modifier)) (not (neg? new-val)))]
-      (let [new-clicks (assoc clicks index new-val)]
+          modifier-2 (range -1 2)
+          index (range 0  button-cnt)
+          index-2 (range 0 button-cnt)
+          :let [new-val (+ (clicks index) modifier)
+                new-val-2 (+ (clicks index-2) modifier-2)]
+          :when (and (< index-2 index) (not (= modifier modifier-2 0)) (not (neg? new-val)) (not (neg? new-val-2)))]
+      (let [new-clicks (-> clicks
+                           (assoc index new-val)
+                           (assoc index-2 new-val-2))]
         [(calc-score machine new-clicks) new-clicks]))))
 
 (defn solve-machine [machine]
@@ -71,7 +81,7 @@
                                                combinations))
             good-ones (map second (filter (comp zero? first) new-combinations)) 
             min-score (if (seq new-combinations) (first (apply min-key first new-combinations)) nil)
-            filtered (when (seq new-combinations) (filter (comp (partial <= (inc min-score)) first) new-combinations))
+            filtered (when (seq new-combinations) (filter (comp (partial = min-score) first) new-combinations))
             ]
         (aoc/dbg "Min score:" min-score)
         ;; (aoc/dbg "Filtered:" filtered)
