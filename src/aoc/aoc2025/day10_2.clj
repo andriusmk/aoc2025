@@ -1,6 +1,7 @@
 (ns aoc.aoc2025.day10-2
   (:require [aoc.core :as aoc]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [clojure.set :as set]))
 
 (def test-input "Example from AOC" "
 [.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}
@@ -35,47 +36,57 @@
 (defn calc-score [machine clicks]
   (let [jolts (clicks-to-joltages machine clicks)
         diffs (map (comp abs -) jolts (machine :joltages))
-        diff-score (* 1000000 (apply + diffs))]
-    (+ diff-score (apply + clicks))))
+        diff-score (apply + diffs)]
+    diff-score))
 
 (defn parse-input [input]
   (map parse-line input))
+
+(defn make-new-combinations [machine clicks]
+  (let [button-cnt (count (machine :buttons))]
+    (for [modifier (range -1 2)
+          index (range 0 button-cnt)
+          :let [new-val (+ (clicks index) modifier)]
+          :when (and (not (zero? modifier)) (not (neg? new-val)))]
+      (let [new-clicks (assoc clicks index new-val)]
+        [(calc-score machine new-clicks) new-clicks]))))
 
 (defn solve-machine [machine]
   (let [button-cnt (count (machine :buttons))
         initial-clicks (vec (repeat button-cnt 0))
         initial-score (calc-score machine initial-clicks)]
-    (loop [clicks initial-clicks
-           score initial-score
-           forbidden #{}
-           stack ()]
-      (aoc/dbg [clicks (clicks-to-joltages machine clicks) (machine :joltages) score])
-      (let [combinations (for [modifier (range -1 2)
-                               index (range 0 button-cnt)
-                               :let [new-val (+ (clicks index) modifier)]
-                               :when (and (not (zero? modifier)) (not (neg? new-val)))]
-                           (let [new-clicks (assoc clicks index new-val)]
-                             [(calc-score machine new-clicks) new-clicks]))
-            best-combs (sort-by first < combinations)
-            best-comb (some #(when (not (forbidden (second %))) %) best-combs)]
-        (aoc/dbg (string/join \newline combinations))
-        (aoc/dbg (str "best: " best-comb))
+    (loop [combinations `([~initial-score ~initial-clicks])
+           visited #{}
+           found-good #{}]
+      ;(aoc/dbg "--------------")
+      ;(aoc/dbg (string/join \newline combinations))
+      (let [better? (fn [current new]
+                      (and (> (first current) (first new)) (not (visited (second new)))))
+            new-combinations (apply list (distinct (mapcat (fn [combination]
+                                                             (->> combination
+                                                                  second
+                                                                  (make-new-combinations machine)
+                                                                  distinct
+                                                                  (filter (partial better? combination))
+                                                                  ))
+                                                           combinations)))
+            good-ones (filter (comp zero? first) new-combinations) 
+            ]
         (cond
-          (nil? best-comb) (do (aoc/dbg (str "forbidden: " clicks))
-                               (aoc/dbg (str "next in stack: " (first stack)))
-                               (recur (first stack) score (conj forbidden clicks) (rest stack)))
-          (< (first best-comb) score) (recur (second best-comb) (first best-comb) forbidden (conj stack clicks))
-          (>= score 1000000) (do
-                               (aoc/dbg (str "forbidden: " (second best-comb)))
-                               (recur clicks score (conj forbidden (second best-comb)) stack))
-          :else (apply + clicks))))))
+          (empty? new-combinations) (apply min (map (partial apply +) found-good))
+          (seq good-ones) (recur good-ones (set/union visited (set (map second combinations))) (set/union found-good (set (map second good-ones))))
+          :else (recur new-combinations (set/union visited (set (map second combinations))) good-ones)
+          )))))
 
 (defn solution [input]
   (->> input ; strings
        parse-input ; list of machines
+       ; first
+       ; solve-machine
        (map solve-machine)
-       ;;  (map calc-min-pushes)
-       (apply +)))
+       ;; (map calc-min-pushes)
+       (apply +)
+       ))
 
 (comment
   (< nil 1)

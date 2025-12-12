@@ -18,9 +18,10 @@
 
 (defn dbg
   "Prints the parameter and evaluates to it."
-  [value]
-  (println value)
-  value)
+  [& args]
+  (let [value (last args)]
+    (apply println args)
+    value))
 
 (defn split-all
   "Splits the given collection on all occurrences of an item
